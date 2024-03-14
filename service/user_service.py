@@ -104,6 +104,7 @@ async def get_users():
     return [user.get_dto() for user in users]
 
 
+# сюда возможно надо будет добавить проекты пользователя
 async def get_user(user_id: int):
     user = await objects.get_or_none(User.select().where(User.id == user_id))
     if not user:

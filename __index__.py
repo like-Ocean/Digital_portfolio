@@ -16,7 +16,7 @@ load_dotenv()
 app = FastAPI()
 
 for router in routes:
-    app.include_router(router)
+    app.include_router(router, prefix="/api")
 
 
 app.add_middleware(

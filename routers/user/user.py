@@ -3,7 +3,7 @@ from starlette.responses import JSONResponse
 from .user_scheme import RegisterModel, ChangeModel, DeleteUserModel, ChangePasswordModel, Authorization
 from service import user_service
 
-user_router = APIRouter(prefix="/users")
+user_router = APIRouter(prefix="/users", tags=["users"])
 
 
 @user_router.post("/registration")
