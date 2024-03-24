@@ -11,7 +11,8 @@ class File(BaseModel):
     def get_dto(self):
         return {
             'file_id': self.id,
-            'filename': self.filename
+            'filename': self.filename,
+            'url': self.url
         }
 
     class Meta:

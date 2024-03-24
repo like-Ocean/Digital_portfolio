@@ -1,10 +1,12 @@
 from datetime import datetime
 from fastapi import HTTPException, UploadFile
 from database import objects
-from models import User, Project, ProjectFile
+from models import User, Project, ProjectFile, File
 from service import file_service
 
 
+# TODO: лучше возвращать с файлами, даже если файлов ещё нет.
+#  С юзерами и сертификатами так же.
 async def create_project(user_id: int, name: str, description: str):
     user = await objects.get_or_none(User.select().where(User.id == user_id))
     if not user:
@@ -59,3 +61,29 @@ async def get_user_projects(user_id: int):
 async def get_project(project_id: int):
     projects = await objects.execute(Project.select().where(Project.id == project_id))
     return [project.get_dto() for project in projects]
+
+
+async def save_project_files(files: [UploadFile], project_id: int):
+    project = await objects.get_or_none(Project.select().where(Project.id == project_id))
+    if not project:
+        raise HTTPException(status_code=400, detail="Project not found")
+
+    files_list = []
+
+    for file in files:
+        saved_file = await file_service.save_file(file)
+        files_list.append(saved_file)
+
+    for document in files_list:
+        await objects.create(ProjectFile, project=project, file=document.id)
+
+    return {**project.get_dto(), 'files': [doc.get_dto() for doc in files_list]}
+
+
+async def delete_file(file_id: str, project_id: int):
+    project_file = await objects.get_or_none(ProjectFile.select().where(
+        (ProjectFile.project == project_id) & (ProjectFile.file == file_id)
+    ))
+    await objects.execute(ProjectFile.delete().where(ProjectFile.id == project_file))
+    await objects.execute(File.delete().where(File.id == file_id))
+

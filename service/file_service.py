@@ -71,3 +71,5 @@ async def save_file(file: UploadFile):
         filename=file.filename
     )
     return new_file
+
+# TODO:  get_file и роут

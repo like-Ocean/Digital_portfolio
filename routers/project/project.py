@@ -1,5 +1,7 @@
-from fastapi import APIRouter, Response
-from .project_scheme import CreateProjectModel, ChangeProjectModel, DeleteProjectModel
+from typing import List
+
+from fastapi import APIRouter, Response, UploadFile
+from .project_scheme import CreateProjectModel, ChangeProjectModel, DeleteProjectModel, DeleteFileModel
 from service import project_service
 
 project_router = APIRouter(prefix="/projects", tags=["projects"])
@@ -48,10 +50,18 @@ async def get_user_projects(user):
 async def get_project(project_id):
     return await project_service.get_project(project_id)
 
-# то что нужно но надо понять как работает
-# @project_router.post("/files/")
-# async def create_files(files: List[UploadFile] = File(...)):
-#     return {"filenames": [file.filename for file in files]}
+
+@project_router.post("/project/file/upload")
+async def upload_files(files: List[UploadFile], project_id):
+    file_data = await project_service.save_project_files(files, project_id)
+    return file_data
+
+
+@project_router.delete("/project/file/delete")
+async def delete_file(file: DeleteFileModel):
+    await project_service.delete_file(file.file_id, file.project_id)
+    return Response(status_code=204)
+
 
 # @project_router.post("/uploadfile/")
 # async def upload_file(file: UploadFile = File(...)):

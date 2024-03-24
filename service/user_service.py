@@ -90,6 +90,7 @@ async def change_password(user_id: int, password: str):
     await objects.update(user)
 
 
+# TODO: убрать из функций удаления проверку на существование объекта и возвращать статус код 204
 async def delete(user_id: int):
     user = await objects.get_or_none(User.select().where(User.id == user_id))
     if not user:

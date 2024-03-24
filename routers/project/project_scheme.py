@@ -19,5 +19,11 @@ class DeleteProjectModel(BaseModel):
     user_id: int = Field(...)
 
 
-class FileModel(BaseModel):
-    files: List[UploadFile] = File(None)
+class DeleteFileModel(BaseModel):
+    file_id: str = Field(...)
+    project_id: int = Field(...)
+
+
+# class UploadFileModel(BaseModel):
+#     project_id: int = Field(...)
+
