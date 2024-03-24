@@ -1,6 +1,4 @@
 from pydantic import BaseModel, Field
-from fastapi import UploadFile, File
-from typing import List
 
 
 class CreateProjectModel(BaseModel):
@@ -22,8 +20,3 @@ class DeleteProjectModel(BaseModel):
 class DeleteFileModel(BaseModel):
     file_id: str = Field(...)
     project_id: int = Field(...)
-
-
-# class UploadFileModel(BaseModel):
-#     project_id: int = Field(...)
-

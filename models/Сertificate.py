@@ -7,8 +7,8 @@ class Certificate(BaseModel):
     id = AutoField(primary_key=True, unique=True)
     user = ForeignKeyField(User, backref='certificates', on_delete='CASCADE', null=False)
     name = TextField(null=False)
-    company = TextField()
-    link = TextField()
+    company = TextField(null=True)
+    link = TextField(null=True)
     file = ForeignKeyField(File, on_delete='CASCADE', null=False)
 
     def get_dto(self):
