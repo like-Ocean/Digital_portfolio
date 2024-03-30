@@ -14,14 +14,11 @@ class Grade(BaseModel):
             'id': self.id,
             'project': {
                 'id': self.project.id,
-                'name': self.project.name,
-                'description': self.project.description,
+                'name': self.project.name
             },
             'user': {
                 'id': self.user.id,
-                'login': self.user.login,
-                'first_name': self.user.first_name,
-                'surname': self.user.surname
+                'login': self.user.login
             },
             'grade': self.grade
         }

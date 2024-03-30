@@ -12,7 +12,7 @@ class ProjectFile(BaseModel):
         return {
             'project': {
                 'id': self.project.id,
-                'name': self.project.name,
+                'name': self.project.name
             },
             **self.file.get_dto(),
         }
