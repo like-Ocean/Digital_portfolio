@@ -7,7 +7,7 @@ import os
 
 from database import db
 from service.middleware import DatabaseMiddleware
-from models import (User, Session, Project, Grade, Comment, Subscriber, File, ProjectFile, Certificate)
+from models import (User, Session, Project, Grade, Comment, File, ProjectFile, Certificate)
 from routers import routes
 
 
@@ -34,7 +34,7 @@ if __name__ == '__main__':
     with db:
         db.create_tables([
             User, Session, Project, Grade, Comment,
-            Subscriber, File, ProjectFile, Certificate
+            File, ProjectFile, Certificate
         ])
     uvicorn.run(
         "__index__:app",

@@ -19,6 +19,7 @@ class Grade(BaseModel):
             },
             'user': {
                 'id': self.user.id,
+                'login': self.user.login,
                 'first_name': self.user.first_name,
                 'surname': self.user.surname
             },

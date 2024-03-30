@@ -11,12 +11,12 @@ class RegisterModel(BaseModel):
 
 class ChangeModel(BaseModel):
     user_id: int = Field(...)
-    login: str = Field(default=None)
-    email: EmailStr = None
-    first_name: str = Field(default=None)
-    surname: str = Field(default=None)
-    phone: str = Field(default=None)
-    about: str = Field(default=None)
+    login: str | None = Field(None)
+    email: EmailStr | None = Field(None)
+    first_name: str | None = Field(None)
+    surname: str | None = Field(None)
+    phone: str | None = Field(None)
+    about: str | None = Field(None)
 
 
 class DeleteUserModel(BaseModel):

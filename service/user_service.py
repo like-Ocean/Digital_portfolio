@@ -1,7 +1,9 @@
-from fastapi import HTTPException
 import re
 from uuid import uuid4
+
+from fastapi import HTTPException, Request
 from werkzeug.security import generate_password_hash, check_password_hash
+
 from database import objects
 from models import User, Session
 
@@ -38,11 +40,11 @@ async def authorization(login: str, password: str):
     if not user or not check_password_hash(user.password, password):
         raise HTTPException(status_code=400, detail="Wrong login or password")
 
-    user_sessions = await objects.count(Session.select().where(Session.user == user))
+    user_sessions = await objects.execute(Session.select().where(Session.user == user))
 
-    if user_sessions >= 5:
-        delete_session = Session.delete().where(Session.user == user).limit(1)
-        await objects.execute(delete_session)
+    if len(user_sessions) >= 5:
+        oldest_session = min(user_sessions, key=lambda session: session.id)
+        await objects.delete(oldest_session)
 
     session = await objects.create(Session, user=user, session=str(uuid4()))
     return user.get_dto(), session.session
@@ -60,6 +62,19 @@ async def authorization_check(session: str):
     return users.get_dto()
 
 
+async def get_current_user(request: Request):
+    user_session = request.cookies.get('session')
+    if not user_session:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    session = await objects.get(Session.select().where(Session.session == user_session))
+    if session is None:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    user = await objects.get(User.select().where(User.id == session.user))
+    return user
+
+
 async def change_user(user_id: int, login: str, email: str,
                       first_name: str, surname: str, phone: str, about: str):
     user = await objects.get_or_none(User.select().where(User.id == user_id))
@@ -70,11 +85,11 @@ async def change_user(user_id: int, login: str, email: str,
         raise HTTPException(status_code=400, detail="User with this login already exists")
 
     user.login = login if login is not None else user.login
-    user.email = email
-    user.first_name = first_name
-    user.surname = surname
-    user.phone = phone
-    user.about = about
+    user.email = email or user.email
+    user.first_name = first_name or user.first_name
+    user.surname = surname or user.surname
+    user.phone = phone or user.phone
+    user.about = about or user.about
 
     await objects.update(user)
 

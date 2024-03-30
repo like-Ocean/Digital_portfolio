@@ -11,8 +11,6 @@ class User(BaseModel):
     password = TextField(null=False)
     phone = TextField(null=True)
     about = TextField(null=True)
-    subscribers_count = IntegerField(default=0)
-    subscriptions_count = IntegerField(default=0)
 
     def get_dto(self):
         return {
@@ -22,9 +20,7 @@ class User(BaseModel):
             'first_name': self.first_name,
             'surname': self.surname,
             'phone': self.phone,
-            'about': self.about,
-            'subscribers_count': self.subscribers_count,
-            'subscriptions_count': self.subscriptions_count
+            'about': self.about
         }
 
     class Meta:

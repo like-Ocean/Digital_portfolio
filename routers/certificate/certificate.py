@@ -1,6 +1,9 @@
-from .certificate_scheme import AddCertificateModel, EditCertificateModel, DeleteCertificateModel
 from fastapi import APIRouter, UploadFile, File, Depends, Response
+
+from models import User
 from service import certificate_service
+from service.user_service import get_current_user
+from .certificate_scheme import AddCertificateModel, EditCertificateModel, DeleteCertificateModel
 
 certificate_router = APIRouter(prefix="/certificates", tags=["certificates"])
 
@@ -21,7 +24,8 @@ certificate_router = APIRouter(prefix="/certificates", tags=["certificates"])
 #     return certificate
 
 @certificate_router.post("/certificate/add")
-async def add_certificate(data: AddCertificateModel = Depends(), file: UploadFile = File(...)):
+async def add_certificate(data: AddCertificateModel = Depends(), file: UploadFile = File(...),
+                          current_user: User = Depends(get_current_user)):
     certificate = await certificate_service.add_certificate(
         data.user_id, data.name,
         data.company, data.link,
@@ -31,7 +35,9 @@ async def add_certificate(data: AddCertificateModel = Depends(), file: UploadFil
 
 
 @certificate_router.patch("/certificate/change")
-async def edit_certificate(data: EditCertificateModel = Depends(), file: UploadFile = File(None)):
+async def edit_certificate(data: EditCertificateModel = Depends(),
+                           file: UploadFile = File(None),
+                           current_user: User = Depends(get_current_user)):
     certificate = await certificate_service.change_certificate(
         data.certificate_id, data.name,
         data.company, data.link,
@@ -41,7 +47,8 @@ async def edit_certificate(data: EditCertificateModel = Depends(), file: UploadF
 
 
 @certificate_router.delete("/certificate/delete")
-async def delete_certificate(data: DeleteCertificateModel):
+async def delete_certificate(data: DeleteCertificateModel,
+                             current_user: User = Depends(get_current_user)):
     await certificate_service.remove_certificate(data.certificate_id, data.file_id)
     return Response(status_code=204)
 

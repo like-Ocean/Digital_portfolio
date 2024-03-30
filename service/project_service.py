@@ -1,12 +1,14 @@
 from datetime import datetime
+
 from fastapi import HTTPException, UploadFile
+
 from database import objects
 from models import User, Project, ProjectFile, File
 from service import file_service
 
 
 # TODO: лучше возвращать с файлами, даже если файлов ещё нет.
-#  С юзерами и сертификатами так же.
+#  С юзерами и сертификатами так же.(в гет функциях сделать так же)
 async def create_project(user_id: int, name: str, description: str):
     user = await objects.get_or_none(User.select().where(User.id == user_id))
     if not user:
@@ -19,7 +21,12 @@ async def create_project(user_id: int, name: str, description: str):
         description=description,
         creation_date=datetime.now()
     )
-    return project.get_dto()
+
+    files = await objects.execute(
+        ProjectFile.select().where(ProjectFile.project == project)
+    )
+
+    return {**project.get_dto(), 'files': [file.get_dto() for file in files]}
 
 
 async def change_project(project_id: int, name: str, description: str):
@@ -58,6 +65,7 @@ async def get_user_projects(user_id: int):
     return [project.get_dto() for project in projects]
 
 
+# TODO: так же получение коментов и файлов и оценки
 async def get_project(project_id: int):
     projects = await objects.execute(Project.select().where(Project.id == project_id))
     return [project.get_dto() for project in projects]
