@@ -1,4 +1,4 @@
-from peewee import TextField, AutoField, IntegerField
+from peewee import TextField, AutoField
 from database import BaseModel
 
 

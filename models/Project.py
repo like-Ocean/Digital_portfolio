@@ -1,6 +1,6 @@
 from peewee import TextField, AutoField, DateField, ForeignKeyField
 from database import BaseModel
-from models import User
+from models import User, Category
 
 
 class Project(BaseModel):
@@ -9,6 +9,7 @@ class Project(BaseModel):
     name = TextField(null=False)
     description = TextField(null=True)
     creation_date = DateField(null=False)
+    category = ForeignKeyField(Category, on_delete='CASCADE', null=False)
 
     def get_dto(self):
         return {
@@ -21,7 +22,11 @@ class Project(BaseModel):
             },
             'name': self.name,
             'description': self.description,
-            'creation_date': self.creation_date
+            'creation_date': self.creation_date,
+            'category': {
+                'id': self.category.id,
+                'name': self.category.name
+            }
         }
 
     class Meta:

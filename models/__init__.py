@@ -1,5 +1,6 @@
 from .User import User
 from .Session import Session
+from .Category import Category
 from .Project import Project
 from .Grade import Grade
 from .Comment import Comment

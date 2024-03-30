@@ -16,6 +16,7 @@ async def create(project: CreateProjectModel, current_user: User = Depends(get_c
         project.user_id,
         project.name,
         project.description,
+        project.category
     )
     return project_data
 
@@ -25,7 +26,8 @@ async def change_project(project: ChangeProjectModel, current_user: User = Depen
     project_data = await project_service.change_project(
         project.project_id,
         project.name,
-        project.description
+        project.description,
+        project.category
     )
     return project_data
 
@@ -66,3 +68,8 @@ async def upload_files(files: List[UploadFile], project_id,
 async def delete_file(file: DeleteFileModel, current_user: User = Depends(get_current_user)):
     await project_service.delete_file(file.file_id, file.project_id)
     return Response(status_code=204)
+
+
+@project_router.get("/category/{category_id}")
+async def get_category_project(category_id):
+    return await project_service.get_category_projects(category_id)

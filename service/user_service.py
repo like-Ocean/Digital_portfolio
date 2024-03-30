@@ -51,15 +51,16 @@ async def authorization(login: str, password: str):
 
 
 async def authorization_check(session: str):
-    session = await objects.get_or_none(Session.select().where(Session.session == session))
+    sessions = await objects.execute(Session.select().where(Session.session == session))
     if not session:
         raise HTTPException(status_code=401, detail="Unauthorized")
+    session = sessions[0]
 
-    users = await objects.get_or_none(User.select().where(User.id == session.user))
+    users = await objects.execute(User.select().where(User.id == session.user))
     if not users:
         raise HTTPException(status_code=403, detail="Forbidden")
 
-    return users.get_dto()
+    return users[0].get_dto()
 
 
 async def get_current_user(request: Request):

@@ -9,7 +9,7 @@ from service import file_service
 
 # TODO: лучше возвращать с файлами, даже если файлов ещё нет.
 #  С юзерами и сертификатами так же.(в гет функциях сделать так же)
-async def create_project(user_id: int, name: str, description: str):
+async def create_project(user_id: int, name: str, description: str, category_id: int):
     user = await objects.get_or_none(User.select().where(User.id == user_id))
     if not user:
         raise HTTPException(status_code=400, detail="User not found")
@@ -19,7 +19,8 @@ async def create_project(user_id: int, name: str, description: str):
         user=user_id,
         name=name,
         description=description,
-        creation_date=datetime.now()
+        creation_date=datetime.now(),
+        category=category_id
     )
 
     files = await objects.execute(
@@ -29,13 +30,14 @@ async def create_project(user_id: int, name: str, description: str):
     return {**project.get_dto(), 'files': [file.get_dto() for file in files]}
 
 
-async def change_project(project_id: int, name: str, description: str):
+async def change_project(project_id: int, name: str, description: str, category_id: int):
     project = await objects.get_or_none(Project.select().where(Project.id == project_id))
     if not project:
         raise HTTPException(status_code=400, detail="Project not found")
 
-    project.name = name
-    project.description = description
+    project.name = name or project.name
+    project.description = description or project.description
+    project.category = category_id or project.category
 
     await objects.update(project)
 
@@ -94,4 +96,9 @@ async def delete_file(file_id: str, project_id: int):
     ))
     await objects.execute(ProjectFile.delete().where(ProjectFile.id == project_file))
     await objects.execute(File.delete().where(File.id == file_id))
+
+
+async def get_category_projects(category_id: int):
+    projects = await objects.execute(Project.select().where(Project.category == category_id))
+    return [project.get_dto() for project in projects]
 
