@@ -64,13 +64,25 @@ async def get_all_projects():
 # МБ эту функцию нужно будет убрать от сюда
 async def get_user_projects(user_id: int):
     projects = await objects.execute(Project.select().where(Project.user == user_id))
-    return [project.get_dto() for project in projects]
+
+    result_data = []
+
+    for project in projects:
+        files = await objects.execute(ProjectFile.select().where(ProjectFile.project == project.id))
+        project_dto = project.get_dto()
+        project_dto['files'] = [file.get_dto() for file in files]
+        result_data.append(project_dto)
+
+    return result_data
 
 
 # TODO: так же получение коментов и файлов и оценки
 async def get_project(project_id: int):
-    projects = await objects.execute(Project.select().where(Project.id == project_id))
-    return [project.get_dto() for project in projects]
+    project = await objects.get_or_none(Project.select().where(Project.id == project_id))
+    project_files = await objects.execute(
+        ProjectFile.select().where(ProjectFile.project == project_id)
+    )
+    return {**project.get_dto(), 'files': [file.get_dto() for file in project_files]}
 
 
 async def save_project_files(files: [UploadFile], project_id: int):
