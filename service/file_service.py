@@ -1,7 +1,7 @@
 import hashlib
 import os
 from uuid import uuid4
-from fastapi import UploadFile
+from fastapi import UploadFile, HTTPException
 from database import objects
 from models import File
 import magic
@@ -73,3 +73,16 @@ async def save_file(file: UploadFile):
     return new_file
 
 # TODO:  get_file и роут
+
+
+async def get_file(file_id: str):
+    file = await objects.get_or_none(File.select().where(File.id == file_id))
+    if not file:
+        raise HTTPException(status_code=400, detail="File not found")
+
+    user_files_folder = os.environ.get("USER_FILES_FOLDER")
+    url = f'{user_files_folder}/{file.url}'
+    if not os.path.isfile(url):
+        raise HTTPException(status_code=400, detail="File not found")
+
+    return url, file.filename

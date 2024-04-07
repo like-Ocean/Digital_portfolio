@@ -1,9 +1,10 @@
 from typing import List
 
 from fastapi import APIRouter, Response, UploadFile, Depends
+from fastapi.responses import FileResponse
 
 from models import User
-from service import project_service
+from service import project_service, file_service
 from service.user_service import get_current_user
 from .project_scheme import CreateProjectModel, ChangeProjectModel, DeleteProjectModel, DeleteFileModel
 
@@ -73,3 +74,9 @@ async def delete_file(file: DeleteFileModel, current_user: User = Depends(get_cu
 @project_router.get("/category/{category_id}")
 async def get_category_project(category_id):
     return await project_service.get_category_projects(category_id)
+
+
+@project_router.get("/project/file/{file_id}")
+async def get_file(file_id):
+    url, filename = await file_service.get_file(file_id)
+    return FileResponse(url)
