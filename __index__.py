@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
@@ -6,14 +8,20 @@ from dotenv import load_dotenv
 import os
 
 from database import db
-from service.middleware import DatabaseMiddleware
 from models import (User, Session, Category, Project, Grade, Comment, File, ProjectFile, Certificate)
 from routers import routes
 
 
 load_dotenv()
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    db.connect()
+    yield
+    db.close()
+
+app = FastAPI(lifespan=lifespan)
 
 for router in routes:
     app.include_router(router, prefix="/api")
@@ -27,7 +35,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_middleware(DatabaseMiddleware)
+
+
+# @app.on_event("startup")
+# async def startup_event():
+#     db.connect()
+#
+#
+# @app.on_event("shutdown")
+# async def shutdown_event():
+#     db.close()
 
 
 if __name__ == '__main__':
