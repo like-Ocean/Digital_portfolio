@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Response, UploadFile, Depends
+from fastapi import APIRouter, Response, UploadFile, Depends, Form
 from fastapi.responses import FileResponse
 
 from models import User
@@ -58,7 +58,7 @@ async def get_project(project_id):
 
 
 @project_router.post("/project/file/upload")
-async def upload_files(files: List[UploadFile], project_id,
+async def upload_files(files: List[UploadFile], project_id: int = Form(...),
                        current_user: User = Depends(get_current_user)):
     file_data = await project_service.save_project_files(files, project_id)
     return file_data
@@ -80,3 +80,8 @@ async def get_category_project(category_id):
 async def get_file(file_id):
     url, filename = await file_service.get_file(file_id)
     return FileResponse(url)
+
+
+@project_router.get("/categories")
+async def get_all_category():
+    return await project_service.get_all_categories()

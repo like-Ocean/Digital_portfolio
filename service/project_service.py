@@ -3,7 +3,7 @@ from datetime import datetime
 from fastapi import HTTPException, UploadFile
 
 from database import objects
-from models import User, Project, ProjectFile, File
+from models import User, Project, ProjectFile, File, Category
 from service import file_service
 
 
@@ -41,7 +41,11 @@ async def change_project(project_id: int, name: str, description: str, category_
 
     await objects.update(project)
 
-    return project.get_dto()
+    files = await objects.execute(
+        ProjectFile.select().where(ProjectFile.project == project)
+    )
+
+    return {**project.get_dto(), 'files': [file.get_dto() for file in files]}
 
 
 async def delete(project_id: int, user_id: int):
@@ -113,4 +117,9 @@ async def delete_file(file_id: str, project_id: int):
 async def get_category_projects(category_id: int):
     projects = await objects.execute(Project.select().where(Project.category == category_id))
     return [project.get_dto() for project in projects]
+
+
+async def get_all_categories():
+    categories = await objects.execute(Category.select())
+    return [category.get_dto() for category in categories]
 
