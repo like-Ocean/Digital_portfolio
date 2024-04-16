@@ -50,6 +50,7 @@ async def authorization(login: str, password: str):
     return user.get_dto(), session.session
 
 
+# TODO: if not session ошибка нужно if len(sessions) <= 0
 async def authorization_check(session: str):
     sessions = await objects.execute(Session.select().where(Session.session == session))
     if not session:
@@ -121,7 +122,6 @@ async def get_users():
     return [user.get_dto() for user in users]
 
 
-# сюда возможно надо будет добавить проекты пользователя
 async def get_user(user_id: int):
     user = await objects.get_or_none(User.select().where(User.id == user_id))
     if not user:

@@ -26,14 +26,20 @@ async def add_certificate(user_id: int, name: str, company: str, link: str, file
     return certificate.get_dto()
 
 
-async def change_certificate(certificate_id: int, name: str, company: str, link: str, file: UploadFile = None):
+#  Добавил проверку на юзера, убрал возможность обновлять файл. Если и делать такую возможность,
+#  то отдельным роутом
+async def change_certificate(user_id: int, certificate_id: int, name: str, company: str, link: str):
+    user = await objects.get_or_none(User.select().where(User.id == user_id))
+    if not user:
+        raise HTTPException(status_code=400, detail="User not found")
+
     certificate = await objects.get_or_none(Certificate.select().where(Certificate.id == certificate_id))
     if not certificate:
         raise HTTPException(status_code=400, detail="Certificate not found")
 
-    if file:
-        file_id = await file_service.save_file(file)
-        certificate.file = file_id
+    # if file:
+    #     file_id = await file_service.save_file(file)
+    #     certificate.file = file_id
 
     certificate.name = name or certificate.name
     certificate.company = company or certificate.company
@@ -44,7 +50,11 @@ async def change_certificate(certificate_id: int, name: str, company: str, link:
     return certificate.get_dto()
 
 
-async def remove_certificate(certificate_id: int, file_id: str):
+#  Добавил проверку на юзера
+async def remove_certificate(user_id: int, certificate_id: int, file_id: str):
+    user = await objects.get_or_none(User.select().where(User.id == user_id))
+    if not user:
+        raise HTTPException(status_code=400, detail="User not found")
     await objects.execute(Certificate.delete().where(Certificate.id == certificate_id))
     await objects.execute(File.delete().where(File.id == file_id))
 

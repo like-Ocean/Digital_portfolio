@@ -39,13 +39,12 @@ async def add_certificate(data: AddCertificateModel,
 
 
 @certificate_router.patch("/certificate/change")
-async def edit_certificate(data: EditCertificateModel = Depends(),
-                           file: UploadFile = File(None),
+async def edit_certificate(data: EditCertificateModel,
+
                            current_user: User = Depends(get_current_user)):
     certificate = await certificate_service.change_certificate(
-        data.certificate_id, data.name,
-        data.company, data.link,
-        file
+        data.user_id, data.certificate_id, data.name,
+        data.company, data.link
     )
     return certificate
 
@@ -53,7 +52,7 @@ async def edit_certificate(data: EditCertificateModel = Depends(),
 @certificate_router.delete("/certificate/delete")
 async def delete_certificate(data: DeleteCertificateModel,
                              current_user: User = Depends(get_current_user)):
-    await certificate_service.remove_certificate(data.certificate_id, data.file_id)
+    await certificate_service.remove_certificate(data.user_id, data.certificate_id, data.file_id)
     return Response(status_code=204)
 
 

@@ -11,12 +11,14 @@ class AddCertificateModel(BaseModel):
 
 
 class EditCertificateModel(BaseModel):
+    user_id: int = Field(default=Form(...))
     certificate_id: int = Field(default=Form(...))
-    name: str = Field(default=Form(), min_length=1)
+    name: str | None = Field(default=Form(None))
     company: str | None = Field(default=Form(None))
     link: str | None = Field(default=Form(None))
 
 
 class DeleteCertificateModel(BaseModel):
+    user_id: int = Field(...)
     certificate_id: int = Field(...)
     file_id: str = Field(...)
