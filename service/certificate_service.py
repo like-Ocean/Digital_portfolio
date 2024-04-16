@@ -5,12 +5,15 @@ from models import User, Certificate, File
 from service import file_service
 
 
-async def add_certificate(user_id: int, name: str, company: str, link: str, file: UploadFile):
+async def upload_certificate_file(file: UploadFile):
+    file_id = await file_service.save_file(file)
+    return file_id.get_dto()
+
+
+async def add_certificate(user_id: int, name: str, company: str, link: str, file_id: str):
     user = await objects.get_or_none(User.select().where(User.id == user_id))
     if not user:
         raise HTTPException(status_code=400, detail="User not found")
-
-    file_id = await file_service.save_file(file)
 
     certificate = await objects.create(
         Certificate,
@@ -57,3 +60,8 @@ async def get_certificate(certificate_id: int):
         raise HTTPException(status_code=400, detail="Certificate not found")
 
     return certificate.get_dto()
+
+
+async def get_user_certificates(user_id: int):
+    certificates = await objects.execute(Certificate.select().where(Certificate.user == user_id))
+    return [certificate.get_dto() for certificate in certificates]

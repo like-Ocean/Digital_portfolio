@@ -72,8 +72,6 @@ async def save_file(file: UploadFile):
     )
     return new_file
 
-# TODO:  get_file и роут
-
 
 async def get_file(file_id: str):
     file = await objects.get_or_none(File.select().where(File.id == file_id))

@@ -7,6 +7,7 @@ class AddCertificateModel(BaseModel):
     name: str = Field(default=Form(...), min_length=1)
     company: str | None = Field(default=Form(None))
     link: str | None = Field(default=Form(None))
+    file_id: str = Field(default=Form(...))
 
 
 class EditCertificateModel(BaseModel):

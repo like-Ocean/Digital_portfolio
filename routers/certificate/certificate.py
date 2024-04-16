@@ -1,4 +1,6 @@
-from fastapi import APIRouter, UploadFile, File, Depends, Response
+from typing import List
+
+from fastapi import APIRouter, UploadFile, File, Depends, Response, Form
 
 from models import User
 from service import certificate_service
@@ -7,29 +9,31 @@ from .certificate_scheme import AddCertificateModel, EditCertificateModel, Delet
 
 certificate_router = APIRouter(prefix="/certificates", tags=["certificates"])
 
-
-# функция выглядит правильно и по сути так и есть, но проблема в том, что при добавленни файлов к проекту
-# используется query параметр мб там лучше будет это изменить.
-
-# Тоже работает но, остановился я на другом варианте реализации
-# @certificate_router.post("/add")
-# async def add_certificate(user_id: int = Form(...), name: str = Form(..., min_length=1),
-#                           company: str = Form(None), link: str = Form(None),
-#                           file: UploadFile = File(...)):
+# @certificate_router.post("/certificate/add")
+# async def add_certificate(data: AddCertificateModel = Depends(), file: UploadFile = File(...),
+#                           current_user: User = Depends(get_current_user)):
 #     certificate = await certificate_service.add_certificate(
-#         user_id, name,
-#         company, link,
+#         data.user_id, data.name,
+#         data.company, data.link,
 #         file
 #     )
 #     return certificate
 
-@certificate_router.post("/certificate/add")
-async def add_certificate(data: AddCertificateModel = Depends(), file: UploadFile = File(...),
-                          current_user: User = Depends(get_current_user)):
+
+@certificate_router.post("/certificate/file/upload")
+async def upload_certificate(file: UploadFile, current_user: User = Depends(get_current_user)):
+    certificate = await certificate_service.upload_certificate_file(file)
+    return certificate
+
+
+@certificate_router.post("/certificate/v2/add")
+async def add_certificate(data: AddCertificateModel,
+                                   current_user: User = Depends(get_current_user)):
+
     certificate = await certificate_service.add_certificate(
         data.user_id, data.name,
         data.company, data.link,
-        file
+        data.file_id
     )
     return certificate
 
@@ -62,6 +66,12 @@ async def get_all_certificates():
 @certificate_router.get("/{certificate_id}")
 async def get_certificate(certificate_id):
     certificates = await certificate_service.get_certificate(certificate_id)
+    return certificates
+
+
+@certificate_router.get("/user/{user}")
+async def get_user_certificates(user):
+    certificates = await certificate_service.get_user_certificates(user)
     return certificates
 
 
