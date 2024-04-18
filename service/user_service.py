@@ -50,10 +50,9 @@ async def authorization(login: str, password: str):
     return user.get_dto(), session.session
 
 
-# TODO: if not session ошибка нужно if len(sessions) <= 0
 async def authorization_check(session: str):
     sessions = await objects.execute(Session.select().where(Session.session == session))
-    if not session:
+    if len(sessions) <= 0:
         raise HTTPException(status_code=401, detail="Unauthorized")
     session = sessions[0]
 

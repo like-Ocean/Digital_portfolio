@@ -7,8 +7,6 @@ from models import User, Project, ProjectFile, File, Category
 from service import file_service
 
 
-# TODO: лучше возвращать с файлами, даже если файлов ещё нет.
-#  С юзерами и сертификатами так же.(в гет функциях сделать так же)
 async def create_project(user_id: int, name: str, description: str, category_id: int):
     user = await objects.get_or_none(User.select().where(User.id == user_id))
     if not user:
@@ -62,10 +60,18 @@ async def delete(project_id: int, user_id: int):
 
 async def get_all_projects():
     projects = await objects.execute(Project.select())
-    return [project.get_dto() for project in projects]
+
+    result_data = []
+
+    for project in projects:
+        files = await objects.execute(ProjectFile.select().where(ProjectFile.project == project.id))
+        project_dto = project.get_dto()
+        project_dto['files'] = [file.get_dto() for file in files]
+        result_data.append(project_dto)
+
+    return result_data
 
 
-# МБ эту функцию нужно будет убрать от сюда
 async def get_user_projects(user_id: int):
     projects = await objects.execute(Project.select().where(Project.user == user_id))
 
@@ -80,7 +86,6 @@ async def get_user_projects(user_id: int):
     return result_data
 
 
-# TODO: так же получение коментов и файлов и оценки
 async def get_project(project_id: int):
     project = await objects.get_or_none(Project.select().where(Project.id == project_id))
     project_files = await objects.execute(
