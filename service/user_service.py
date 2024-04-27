@@ -2,6 +2,7 @@ import re
 from uuid import uuid4
 
 from fastapi import HTTPException, Request
+from peewee import DoesNotExist
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from database import objects
@@ -36,9 +37,13 @@ async def registration(login: str, email: str, first_name: str, surname: str, pa
 
 
 async def authorization(login: str, password: str):
-    user = await objects.get_or_none(User.select().where(User.login == login))
-    if not user or not check_password_hash(user.password, password):
-        raise HTTPException(status_code=400, detail="Wrong login or password")
+    try:
+        user = await objects.get(User.select().where(User.login == login))
+    except DoesNotExist:
+        raise HTTPException(status_code=400, detail="Wrong login")
+
+    if not check_password_hash(user.password, password):
+        raise HTTPException(status_code=400, detail="Wrong password")
 
     user_sessions = await objects.execute(Session.select().where(Session.user == user))
 
@@ -85,7 +90,7 @@ async def change_user(user_id: int, login: str, email: str,
     if await objects.count(User.select().where((User.login == login) & (User.id != user_id))) > 0:
         raise HTTPException(status_code=400, detail="User with this login already exists")
 
-    user.login = login if login is not None else user.login
+    user.login = login or user.login
     user.email = email or user.email
     user.first_name = first_name or user.first_name
     user.surname = surname or user.surname

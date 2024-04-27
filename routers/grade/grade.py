@@ -24,6 +24,11 @@ async def get_project_grades(project_id):
     return await grade_service.get_project_grades(project_id)
 
 
+@grade_router.get("/user/{user_id}/{project_id}")
+async def get_project_user_grades(user_id, project_id):
+    return await grade_service.get_project_user_grades(user_id, project_id)
+
+
 @grade_router.get("/project/{project_id}/average/grade")
 async def get_avg_project_grade(project_id):
     grade_data = await grade_service.get_average_grade(project_id)

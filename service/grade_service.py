@@ -30,6 +30,15 @@ async def get_project_grades(project_id: int):
     return [grade.get_dto() for grade in grades]
 
 
+async def get_project_user_grades(user_id: int, project_id: int):
+    grade = await objects.get_or_none(Grade.select().where(
+        (Grade.user == user_id) & (Grade.project == project_id)
+    ))
+    if not grade:
+        return HTTPException(status_code=400, detail="Grade not found")
+    return grade.get_dto()
+
+
 async def get_average_grade(project_id: int):
     average_grade = await objects.get(
         Grade.select(fn.AVG(Grade.grade)).where(Grade.project == project_id)

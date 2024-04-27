@@ -121,7 +121,16 @@ async def delete_file(file_id: str, project_id: int):
 
 async def get_category_projects(category_id: int):
     projects = await objects.execute(Project.select().where(Project.category == category_id))
-    return [project.get_dto() for project in projects]
+
+    result_data = []
+
+    for project in projects:
+        files = await objects.execute(ProjectFile.select().where(ProjectFile.project == project.id))
+        project_dto = project.get_dto()
+        project_dto['files'] = [file.get_dto() for file in files]
+        result_data.append(project_dto)
+
+    return result_data
 
 
 async def get_all_categories():
