@@ -4,7 +4,7 @@ from fastapi import HTTPException, UploadFile
 
 from database import objects
 from models import User, Project, ProjectFile, File, Category
-from service import file_service
+from service import file_service, grade_service
 
 
 async def create_project(user_id: int, name: str, description: str, category_id: int):
@@ -65,8 +65,10 @@ async def get_all_projects():
 
     for project in projects:
         files = await objects.execute(ProjectFile.select().where(ProjectFile.project == project.id))
+        average_grade = await grade_service.get_average_grade(project.id)
         project_dto = project.get_dto()
         project_dto['files'] = [file.get_dto() for file in files]
+        project_dto['average_grade'] = average_grade
         result_data.append(project_dto)
 
     return result_data
@@ -79,8 +81,10 @@ async def get_user_projects(user_id: int):
 
     for project in projects:
         files = await objects.execute(ProjectFile.select().where(ProjectFile.project == project.id))
+        average_grade = await grade_service.get_average_grade(project.id)
         project_dto = project.get_dto()
         project_dto['files'] = [file.get_dto() for file in files]
+        project_dto['average_grade'] = average_grade
         result_data.append(project_dto)
 
     return result_data
@@ -91,7 +95,8 @@ async def get_project(project_id: int):
     project_files = await objects.execute(
         ProjectFile.select().where(ProjectFile.project == project_id)
     )
-    return {**project.get_dto(), 'files': [file.get_dto() for file in project_files]}
+    average_grade = await grade_service.get_average_grade(project_id)
+    return {**project.get_dto(), 'files': [file.get_dto() for file in project_files], 'average_grade': average_grade}
 
 
 async def save_project_files(files: [UploadFile], project_id: int):
@@ -126,8 +131,10 @@ async def get_category_projects(category_id: int):
 
     for project in projects:
         files = await objects.execute(ProjectFile.select().where(ProjectFile.project == project.id))
+        average_grade = await grade_service.get_average_grade(project.id)
         project_dto = project.get_dto()
         project_dto['files'] = [file.get_dto() for file in files]
+        project_dto['average_grade'] = average_grade
         result_data.append(project_dto)
 
     return result_data

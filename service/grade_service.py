@@ -43,7 +43,9 @@ async def get_average_grade(project_id: int):
     average_grade = await objects.get(
         Grade.select(fn.AVG(Grade.grade)).where(Grade.project == project_id)
     )
-    return {"average_grade": average_grade.avg}
+    if not average_grade:
+        return None
+    return average_grade.avg
 
 
 async def get_projects_sorted_by_rating():
