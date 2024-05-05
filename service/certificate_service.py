@@ -50,7 +50,6 @@ async def change_certificate(user_id: int, certificate_id: int, name: str, compa
     return certificate.get_dto()
 
 
-#  Добавил проверку на юзера
 async def remove_certificate(user_id: int, certificate_id: int, file_id: str):
     user = await objects.get_or_none(User.select().where(User.id == user_id))
     if not user:

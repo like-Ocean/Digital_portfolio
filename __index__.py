@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 import os
 
 from database import db
-from models import (User, Session, Category, Project, Grade, Comment, File, ProjectFile, Certificate)
+from models import (File, User, Session, Category, Project, Grade, Comment, ProjectFile, Certificate)
 from routers import routes
 
 
@@ -34,17 +34,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-
-# @app.on_event("startup")
-# async def startup_event():
-#     db.connect()
-#
-#
-# @app.on_event("shutdown")
-# async def shutdown_event():
-#     db.close()
 
 
 if __name__ == '__main__':

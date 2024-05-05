@@ -1,12 +1,13 @@
 import re
 from uuid import uuid4
 
-from fastapi import HTTPException, Request
+from fastapi import HTTPException, Request, UploadFile
 from peewee import DoesNotExist
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from database import objects
-from models import User, Session
+from models import User, Session, File
+from service import file_service
 
 
 def validate_password(password: str):
@@ -18,7 +19,7 @@ def validate_password(password: str):
         raise HTTPException(status_code=400, detail="Password must contain at least one digit")
 
 
-async def registration(login: str, email: str, first_name: str, surname: str, password: str):
+async def registration(login: str, email: str, first_name: str, surname: str, country: str, city: str, password: str):
     if await objects.count(User.select().where(User.login == login)) > 0:
         raise HTTPException(status_code=400, detail="Login already exists")
 
@@ -30,6 +31,8 @@ async def registration(login: str, email: str, first_name: str, surname: str, pa
         email=email,
         first_name=first_name,
         surname=surname,
+        country=country,
+        city=city,
         password=generate_password_hash(password)
     )
     user = await objects.get_or_none(User.select().where(User.id == user.id))
@@ -81,8 +84,27 @@ async def get_current_user(request: Request):
     return user
 
 
+async def upload_avatar(file: UploadFile):
+    file_id = await file_service.save_file(file)
+    return file_id.get_dto()
+
+
+async def remove_avatar(user_id: int):
+    user = await objects.get_or_none(User.select().where(User.id == user_id))
+    if not user:
+        raise HTTPException(status_code=400, detail="User not found")
+
+    if user.avatar is not None:
+        file_id = user.avatar.id
+        user.avatar = None
+        await objects.update(user)
+        await objects.execute(File.delete().where(File.id == file_id))
+
+
 async def change_user(user_id: int, login: str, email: str,
-                      first_name: str, surname: str, phone: str, about: str):
+                      first_name: str, surname: str, country: str, city: str,
+                      avatar: str, phone: str, about: str):
+
     user = await objects.get_or_none(User.select().where(User.id == user_id))
     if not user:
         raise HTTPException(status_code=400, detail="User not found")
@@ -94,6 +116,9 @@ async def change_user(user_id: int, login: str, email: str,
     user.email = email or user.email
     user.first_name = first_name or user.first_name
     user.surname = surname or user.surname
+    user.country = country or user.country
+    user.city = city or user.city
+    user.avatar = avatar or user.avatar
     user.phone = phone or user.phone
     user.about = about or user.about
 
@@ -111,7 +136,6 @@ async def change_password(user_id: int, password: str):
     await objects.update(user)
 
 
-# TODO: убрать из функций удаления проверку на существование объекта и возвращать статус код 204
 async def delete(user_id: int):
     user = await objects.get_or_none(User.select().where(User.id == user_id))
     if not user:

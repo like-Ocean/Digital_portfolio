@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Response, Request, HTTPException, Depends
+from fastapi import APIRouter, Response, Request, HTTPException, Depends, UploadFile
 from starlette.responses import JSONResponse
 
 from models import User
 from service import user_service
 from service.user_service import get_current_user
-from .user_scheme import RegisterModel, ChangeModel, DeleteUserModel, ChangePasswordModel, Authorization
+from .user_scheme import RegisterModel, ChangeModel, DeleteUserModel, ChangePasswordModel, Authorization, \
+    DeleteAvatarModel
 
 user_router = APIRouter(prefix="/users", tags=["users"])
 
@@ -16,6 +17,8 @@ async def registration(user: RegisterModel):
         user.email,
         user.first_name,
         user.surname,
+        user.country,
+        user.city,
         user.password
     )
     return user_data
@@ -46,6 +49,18 @@ async def logout():
     return response
 
 
+@user_router.post("/user/avatar/upload")
+async def upload_avatar(file: UploadFile, current_user: User = Depends(get_current_user)):
+    avatar = await user_service.upload_avatar(file)
+    return avatar
+
+
+@user_router.delete("/user/avatar/delete")
+async def delete_avatar(data: DeleteAvatarModel, current_user: User = Depends(get_current_user)):
+    await user_service.remove_avatar(data.user_id)
+    return Response(status_code=204)
+
+
 @user_router.patch("/user/edit")
 async def edit_user(user: ChangeModel, current_user: User = Depends(get_current_user)):
     user_data = await user_service.change_user(
@@ -54,6 +69,9 @@ async def edit_user(user: ChangeModel, current_user: User = Depends(get_current_
         user.email,
         user.first_name,
         user.surname,
+        user.country,
+        user.city,
+        user.avatar,
         user.phone,
         user.about
     )
