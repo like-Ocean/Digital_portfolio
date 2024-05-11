@@ -22,6 +22,7 @@ class Comment(BaseModel):
                 'login': self.user.login,
                 'first_name': self.user.first_name,
                 'surname': self.user.surname,
+                'avatar': self.user.avatar.get_dto() if self.user.avatar else None,
             },
             'comment': self.comment,
             'post_date': self.post_date,

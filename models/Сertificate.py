@@ -18,7 +18,8 @@ class Certificate(BaseModel):
                 'id': self.user.id,
                 'login': self.user.login,
                 'first_name': self.user.first_name,
-                'surname': self.user.surname
+                'surname': self.user.surname,
+                'avatar': self.user.avatar.get_dto() if self.user.avatar else None,
             },
             'name': self.name,
             'company': self.company,
